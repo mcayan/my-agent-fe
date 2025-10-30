@@ -26,6 +26,7 @@
             <input
               v-model="formData.username"
               type="text"
+              maxlength="50"
               class="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               :placeholder="isLogin ? '请输入用户名或邮箱' : '请输入用户名'"
             />
@@ -40,6 +41,7 @@
             <input
               v-model="formData.email"
               type="text"
+              maxlength="100"
               class="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               placeholder="请输入邮箱"
             />
@@ -54,6 +56,7 @@
             <input
               v-model="formData.full_name"
               type="text"
+              maxlength="100"
               class="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               placeholder="请输入全名"
             />
@@ -68,6 +71,7 @@
             <input
               v-model="formData.password"
               type="password"
+              maxlength="50"
               class="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               placeholder="请输入密码"
             />
@@ -148,18 +152,39 @@ const toggleMode = () => {
 
 // 表单验证
 const validateForm = (): boolean => {
+  // 验证用户名
   if (!formData.username.trim()) {
     error('请输入用户名' + (isLogin.value ? '或邮箱' : ''))
     return false
   }
 
+  // 注册时验证用户名长度
+  if (!isLogin.value) {
+    if (formData.username.length < 3) {
+      error('用户名长度不能少于 3 个字符')
+      return false
+    }
+    
+    if (formData.username.length > 50) {
+      error('用户名长度不能超过 50 个字符')
+      return false
+    }
+  }
+
+  // 注册时验证邮箱
   if (!isLogin.value) {
     if (!formData.email.trim()) {
       error('请输入邮箱')
       return false
     }
     
-    // 简单的邮箱格式验证
+    // 邮箱长度验证
+    if (formData.email.length > 100) {
+      error('邮箱长度不能超过 100 个字符')
+      return false
+    }
+    
+    // 邮箱格式验证
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
       error('请输入有效的邮箱地址')
@@ -167,13 +192,27 @@ const validateForm = (): boolean => {
     }
   }
 
+  // 验证全名长度（如果填写了）
+  if (!isLogin.value && formData.full_name.trim()) {
+    if (formData.full_name.length > 100) {
+      error('全名长度不能超过 100 个字符')
+      return false
+    }
+  }
+
+  // 验证密码
   if (!formData.password.trim()) {
     error('请输入密码')
     return false
   }
 
-  if (!isLogin.value && formData.password.length < 6) {
-    error('密码长度不能少于 6 位')
+  if (formData.password.length < 6) {
+    error('密码长度不能少于 6 个字符')
+    return false
+  }
+
+  if (formData.password.length > 50) {
+    error('密码长度不能超过 50 个字符')
     return false
   }
 
