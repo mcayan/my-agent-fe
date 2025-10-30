@@ -26,7 +26,6 @@
             <input
               v-model="formData.username"
               type="text"
-              required
               class="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               :placeholder="isLogin ? '请输入用户名或邮箱' : '请输入用户名'"
             />
@@ -40,8 +39,7 @@
             </label>
             <input
               v-model="formData.email"
-              type="email"
-              required
+              type="text"
               class="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               placeholder="请输入邮箱"
             />
@@ -70,26 +68,9 @@
             <input
               v-model="formData.password"
               type="password"
-              required
               class="w-full px-4 py-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               placeholder="请输入密码"
             />
-          </div>
-
-          <!-- Error Message -->
-          <div v-if="error" class="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 backdrop-blur-sm">
-            <div class="flex items-center gap-2">
-              <AlertCircle :size="16" class="text-red-400" />
-              <p class="text-sm text-red-400">{{ error }}</p>
-            </div>
-          </div>
-
-          <!-- Success Message -->
-          <div v-if="success" class="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 backdrop-blur-sm">
-            <div class="flex items-center gap-2">
-              <CheckCircle :size="16" class="text-green-400" />
-              <p class="text-sm text-green-400">{{ success }}</p>
-            </div>
           </div>
 
           <!-- Submit Button -->
@@ -120,23 +101,34 @@
         By continuing, you agree to our Terms of Service and Privacy Policy
       </p>
     </div>
+
+    <!-- Toast 提示框 -->
+    <Toast
+      :message="toastState.message"
+      :title="toastState.title"
+      :type="toastState.type"
+      :duration="toastState.duration"
+      :show="toastState.show"
+      @close="close"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { User, Mail, UserCircle, Lock, AlertCircle, CheckCircle, LogIn, UserPlus, Loader2, ArrowLeftRight } from 'lucide-vue-next'
+import { User, Mail, UserCircle, Lock, LogIn, UserPlus, Loader2, ArrowLeftRight } from 'lucide-vue-next'
 import Logo from '@/components/Logo.vue'
+import Toast from '@/components/Toast.vue'
+import { useToast } from '@/composables/useToast'
 import { authAPI } from '@/api/auth'
 import { storage } from '@/utils/storage'
 
 const router = useRouter()
+const { toastState, success, error, close } = useToast()
 
 const isLogin = ref(true)
 const loading = ref(false)
-const error = ref('')
-const success = ref('')
 
 const formData = reactive({
   username: '',
@@ -147,8 +139,6 @@ const formData = reactive({
 
 const toggleMode = () => {
   isLogin.value = !isLogin.value
-  error.value = ''
-  success.value = ''
   // 清空表单
   formData.username = ''
   formData.email = ''
@@ -156,9 +146,46 @@ const toggleMode = () => {
   formData.full_name = ''
 }
 
+// 表单验证
+const validateForm = (): boolean => {
+  if (!formData.username.trim()) {
+    error('请输入用户名' + (isLogin.value ? '或邮箱' : ''))
+    return false
+  }
+
+  if (!isLogin.value) {
+    if (!formData.email.trim()) {
+      error('请输入邮箱')
+      return false
+    }
+    
+    // 简单的邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      error('请输入有效的邮箱地址')
+      return false
+    }
+  }
+
+  if (!formData.password.trim()) {
+    error('请输入密码')
+    return false
+  }
+
+  if (!isLogin.value && formData.password.length < 6) {
+    error('密码长度不能少于 6 位')
+    return false
+  }
+
+  return true
+}
+
 const handleSubmit = async () => {
-  error.value = ''
-  success.value = ''
+  // 验证表单
+  if (!validateForm()) {
+    return
+  }
+
   loading.value = true
 
   try {
@@ -176,7 +203,7 @@ const handleSubmit = async () => {
       const user = await authAPI.getCurrentUser(response.access_token)
       storage.setUser(user)
 
-      success.value = '登录成功！'
+      success('登录成功！', '欢迎回来')
       
       // 跳转到首页
       setTimeout(() => {
@@ -191,16 +218,17 @@ const handleSubmit = async () => {
         full_name: formData.full_name || undefined
       })
 
-      success.value = '注册成功！请登录'
+      success('注册成功！', '请使用新账户登录')
       
       // 切换到登录模式
       setTimeout(() => {
+        const savedUsername = formData.username
         toggleMode()
-        formData.username = formData.username // 保留用户名
+        formData.username = savedUsername // 保留用户名
       }, 1500)
     }
   } catch (err: any) {
-    error.value = err.message || '操作失败，请重试'
+    error(err.message || '操作失败，请重试', '错误')
   } finally {
     loading.value = false
   }
