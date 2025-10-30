@@ -9,10 +9,8 @@
     <div class="max-w-md w-full relative z-10">
       <!-- Logo and Title -->
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
-          <Bot :size="32" class="text-white" />
-        </div>
-        <h1 class="text-4xl font-bold text-white mb-2">个人智能体</h1>
+        <Logo />
+        <h1 class="text-4xl font-bold text-white mb-2 mt-6">个人智能体</h1>
         <p class="text-gray-400">{{ isLogin ? '登录到你的账户' : '创建新账户' }}</p>
       </div>
 
@@ -98,7 +96,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="w-full bg-gray-700/50 hover:bg-gray-700 text-gray-100 py-3 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-gray-600/50"
           >
             <component :is="loading ? Loader2 : (isLogin ? LogIn : UserPlus)" :size="20" :class="{ 'animate-spin': loading }" />
             {{ loading ? '处理中...' : (isLogin ? '登录' : '注册') }}
@@ -109,7 +107,7 @@
         <div class="mt-6 text-center">
           <button
             @click="toggleMode"
-            class="text-blue-400 hover:text-blue-300 text-sm font-medium transition flex items-center justify-center gap-2 mx-auto"
+            class="text-gray-400 hover:text-gray-300 text-sm font-medium transition flex items-center justify-center gap-2 mx-auto"
           >
             <ArrowLeftRight :size="16" />
             {{ isLogin ? '还没有账户？立即注册' : '已有账户？立即登录' }}
@@ -128,7 +126,8 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bot, User, Mail, UserCircle, Lock, AlertCircle, CheckCircle, LogIn, UserPlus, Loader2, ArrowLeftRight } from 'lucide-vue-next'
+import { User, Mail, UserCircle, Lock, AlertCircle, CheckCircle, LogIn, UserPlus, Loader2, ArrowLeftRight } from 'lucide-vue-next'
+import Logo from '@/components/Logo.vue'
 import { authAPI } from '@/api/auth'
 import { storage } from '@/utils/storage'
 

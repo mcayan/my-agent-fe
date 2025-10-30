@@ -5,8 +5,15 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Bot :size="24" class="text-white" />
+            <div class="relative group">
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-lg blur-md group-hover:blur-lg transition-all"></div>
+              <div class="relative bg-gradient-to-br from-gray-800 to-gray-900 p-2 rounded-lg border border-gray-700/50">
+                <svg class="w-6 h-6 text-blue-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
             </div>
             <h1 class="text-2xl font-bold text-white">个人智能体</h1>
           </div>
@@ -160,7 +167,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
-  Bot, User, Mail, UserCircle, LogOut, Sparkles, Zap, 
+  User, Mail, UserCircle, LogOut, Sparkles, Zap, 
   Activity, CheckCircle, Shield, Crown, Calendar, Clock, Hash
 } from 'lucide-vue-next'
 import { storage } from '@/utils/storage'
