@@ -271,10 +271,13 @@ import {
 } from 'lucide-vue-next'
 import { storage } from '@/utils/storage'
 import type { UserResponse } from '@/api/auth'
+import { agentAPI } from '@/api/agent'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
 const user = ref<UserResponse | null>(null)
 const messagesContainer = ref<HTMLElement | null>(null)
+const { showToast } = useToast()
 
 // 聊天相关状态
 const inputMessage = ref('')
@@ -329,7 +332,7 @@ const scrollToBottom = () => {
 }
 
 // 发送消息
-const sendMessage = () => {
+const sendMessage = async () => {
   if (!inputMessage.value.trim()) return
 
   const userMessage: Message = {
@@ -344,19 +347,38 @@ const sendMessage = () => {
   inputMessage.value = ''
   scrollToBottom()
 
-  // 模拟 AI 回复
+  // 调用后端 AI 接口
   isTyping.value = true
-  setTimeout(() => {
+  try {
+    const response = await agentAPI.chat({
+      message: userInput,
+      conversation_id: currentChatId.value.toString()
+    })
+
     const aiMessage: Message = {
       id: Date.now(),
       role: 'assistant',
-      content: `收到你的消息："${userInput}"。这是一个模拟回复。后端接口对接后，我将能够提供真实的智能回答！`,
+      content: response.message,
       time: getCurrentTime()
     }
     messages.value.push(aiMessage)
-    isTyping.value = false
     scrollToBottom()
-  }, 1500)
+  } catch (error: any) {
+    console.error('发送消息失败:', error)
+    showToast(error.message || '发送消息失败，请稍后重试', 'error')
+    
+    // 显示错误消息
+    const errorMessage: Message = {
+      id: Date.now(),
+      role: 'assistant',
+      content: '抱歉，我遇到了一些问题。请检查网络连接或稍后再试。',
+      time: getCurrentTime()
+    }
+    messages.value.push(errorMessage)
+    scrollToBottom()
+  } finally {
+    isTyping.value = false
+  }
 }
 
 // 处理文件上传
